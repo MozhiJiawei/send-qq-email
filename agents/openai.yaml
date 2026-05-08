@@ -1,0 +1,4 @@
+interface:
+  display_name: "Send QQ Email"
+  short_description: "Send UTF-8 email through QQ SMTP."
+  default_prompt: "Use this skill to send or test QQ SMTP email from environment or private config."
