@@ -13,9 +13,39 @@ Use this skill to send or test email through QQ Mail SMTP without bringing in a 
 
 1. Confirm the user's intent and recipient before a real send when the request is ambiguous. Use `--dry-run` for setup checks, previews, and validation tasks.
 2. Load SMTP settings from environment variables or a private config file. See `references/smtp-config.md` when you need exact field names or examples.
-3. Build the message content from `--test`, inline `--text` / `--html`, or file inputs.
-4. Run the script from this skill directory.
-5. Report the result status, recipient, output paths, and any stable error type. Do not print or commit SMTP passwords or QQ authorization codes.
+3. If required SMTP configuration is missing, stop and give the user the QQ Mail setup link, the manual authorization-code steps, and the exact place to paste the code. Do not ask them to "configure SMTP" generically.
+4. Build the message content from `--test`, inline `--text` / `--html`, or file inputs.
+5. Run the script from this skill directory.
+6. Report the result status, recipient, output paths, and any stable error type. Do not print or commit SMTP passwords or QQ authorization codes.
+
+## Missing Configuration Guidance
+
+When `SMTP_USERNAME`, `SMTP_PASSWORD`, or the recipient is missing, tell the user:
+
+- Open QQ Mail: <https://mail.qq.com/>
+- In QQ Mail web settings, go to `Settings` / `Account` / `POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV service`.
+- Enable `POP3/SMTP` or `IMAP/SMTP`, complete the phone or QR verification, then copy the generated authorization code.
+- Paste the mailbox address into `SMTP_USERNAME`.
+- Paste the authorization code into `SMTP_PASSWORD`; do not use the normal QQ password.
+- Put the recipient in `SMTP_TO`, or pass `--to recipient@example.com` on the command line.
+
+Show one concrete fill-in location. Prefer the private config file for this standalone skill:
+
+```yaml
+# ~/.send-qq-email/email.yaml
+smtp:
+  username: your-account@qq.com
+  password: paste-qq-mail-authorization-code-here
+  to_address: receiver@example.com
+```
+
+If the surrounding project already uses `.env`, show the equivalent keys:
+
+```dotenv
+SMTP_USERNAME=your-account@qq.com
+SMTP_PASSWORD=paste-qq-mail-authorization-code-here
+SMTP_TO=receiver@example.com
+```
 
 ## Commands
 

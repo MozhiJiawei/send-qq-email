@@ -22,6 +22,7 @@ DEFAULT_CONFIG_FILE = "email.yaml"
 DEFAULT_SMTP_HOST = "smtp.qq.com"
 DEFAULT_SMTP_PORT = 587
 DEFAULT_TIMEOUT_SECONDS = 20.0
+QQ_MAIL_SETUP_URL = "https://mail.qq.com/"
 
 
 class EmailConfigError(Exception):
@@ -124,12 +125,10 @@ def load_config(args: argparse.Namespace) -> EmailConfig:
         missing.append("SMTP_USERNAME")
     if not password:
         missing.append("SMTP_PASSWORD")
-    if not from_address:
-        missing.append("SMTP_FROM")
     if not to_address:
         missing.append("SMTP_TO or --to")
     if missing:
-        raise EmailConfigError("Missing SMTP configuration: " + ", ".join(missing))
+        raise EmailConfigError(format_missing_config_guidance(missing))
 
     try:
         port = int(port_text)
@@ -232,6 +231,34 @@ def merge_config(file_values: dict[str, str], env: os._Environ[str]) -> dict[str
         if env.get(key):
             values[key] = env[key]
     return values
+
+
+def format_missing_config_guidance(missing: list[str]) -> str:
+    missing_text = ", ".join(missing)
+    return "\n".join(
+        [
+            f"Missing SMTP configuration: {missing_text}",
+            "",
+            "Manual QQ Mail setup is required before sending:",
+            f"1. Open QQ Mail: {QQ_MAIL_SETUP_URL}",
+            "2. Go to Settings > Account > POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV service.",
+            "3. Enable POP3/SMTP or IMAP/SMTP, finish QQ Mail phone/QR verification, and copy the generated authorization code.",
+            "4. Put your QQ mailbox address in SMTP_USERNAME.",
+            "5. Put the generated authorization code in SMTP_PASSWORD; do not use your normal QQ password.",
+            "6. Put the recipient in SMTP_TO, or pass --to recipient@example.com.",
+            "",
+            "Private config file example (~/.send-qq-email/email.yaml):",
+            "smtp:",
+            "  username: your-account@qq.com",
+            "  password: paste-qq-mail-authorization-code-here",
+            "  to_address: receiver@example.com",
+            "",
+            ".env keys, if your project loads a .env file:",
+            "SMTP_USERNAME=your-account@qq.com",
+            "SMTP_PASSWORD=paste-qq-mail-authorization-code-here",
+            "SMTP_TO=receiver@example.com",
+        ]
+    )
 
 
 def build_payload(args: argparse.Namespace, config: EmailConfig) -> EmailPayload:
