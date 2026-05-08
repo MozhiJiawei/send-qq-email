@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import smtplib
 import ssl
@@ -48,6 +49,7 @@ class EmailPayload:
     text_body: str
     recipient: str
     html_body: str = ""
+    attachments: list[Path] | None = None
     metadata: dict[str, str] | None = None
 
 
@@ -98,6 +100,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--text-file", help="Path to UTF-8 plain text body file.")
     parser.add_argument("--html", help="HTML body.")
     parser.add_argument("--html-file", help="Path to UTF-8 HTML body file.")
+    parser.add_argument("--attach", action="append", default=[], help="Path to a file attachment. Can be used more than once.")
     parser.add_argument("--test", action="store_true", help="Use a built-in SMTP test message.")
     parser.add_argument("--dry-run", action="store_true", help="Build artifacts without connecting to SMTP.")
     parser.add_argument("--output-dir", default="artifacts/email/send-qq-email-latest")
@@ -282,6 +285,7 @@ def build_payload(args: argparse.Namespace, config: EmailConfig) -> EmailPayload
         subject=subject,
         text_body=text_body,
         html_body=html_body,
+        attachments=resolve_attachments(args.attach),
         recipient=config.to_address,
         metadata={"Source": "send-qq-email-skill"},
     )
@@ -291,6 +295,16 @@ def read_optional_text(path_text: str | None) -> str:
     if not path_text:
         return ""
     return Path(path_text).read_text(encoding="utf-8")
+
+
+def resolve_attachments(path_texts: list[str]) -> list[Path]:
+    attachments = []
+    for path_text in path_texts:
+        path = Path(path_text)
+        if not path.is_file():
+            raise EmailConfigError(f"Attachment does not exist or is not a file: {path}")
+        attachments.append(path)
+    return attachments
 
 
 def send_or_dry_run(config: EmailConfig, payload: EmailPayload, args: argparse.Namespace) -> EmailResult:
@@ -348,6 +362,15 @@ def build_message(config: EmailConfig, payload: EmailPayload) -> EmailMessage:
     message.set_content(payload.text_body, subtype="plain", charset="utf-8")
     if payload.html_body:
         message.add_alternative(payload.html_body, subtype="html", charset="utf-8")
+    for attachment in payload.attachments or []:
+        content_type, _ = mimetypes.guess_type(attachment.name)
+        maintype, subtype = (content_type or "application/octet-stream").split("/", 1)
+        message.add_attachment(
+            attachment.read_bytes(),
+            maintype=maintype,
+            subtype=subtype,
+            filename=attachment.name,
+        )
     return message
 
 
