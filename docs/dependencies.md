@@ -22,9 +22,11 @@ python skills/send-qq-email/verify_dependencies.py
 
 | 类型 | 说明 |
 | --- | --- |
-| SMTP 凭据 | 真实发送前需要 QQ 邮箱 SMTP 授权码和收件人配置 |
-| SMTP 网络 | 真实发送时需要访问 `smtp.qq.com:587`；需要时可加 `--check-network` |
+| 必需：SMTP 配置 | 检查 `SMTP_USERNAME`、`SMTP_PASSWORD` 和 `SMTP_TO` 是否存在；配置可来自环境变量、`SEND_QQ_EMAIL_CONFIG` 指向的文件或默认私有配置文件。 |
+| 可选：SMTP 网络 | 仅在传入 `--check-network` 时，尝试连接配置的 SMTP 主机和端口；默认值是 `smtp.qq.com:587`。 |
+
+它不会扫描仓库文件、编译发送脚本、生成 `.eml`、执行 dry-run smoke test，也不会验证 SMTP 登录或邮件投递。网络检查只反映 TCP 连接是否可建立。
 
 ## 判断标准
 
-依赖检查通过表示真实发送所需的外部配置已准备好。真实发送前，还需要让 Agent 确认 SMTP 用户名、授权码、收件人和发送意图。`.eml` dry-run 和脚本编译属于仓库内部健康问题，不作为用户依赖配置展示。
+默认依赖检查通过，表示三个必需 SMTP 配置项已提供；只有使用 `--check-network` 并通过时，才同时表示目标 SMTP 地址在检查时可建立 TCP 连接。真实发送前，还需要让 Agent 确认 SMTP 用户名、授权码、收件人和发送意图。

@@ -29,29 +29,38 @@
 
 ## 脚本入口
 
+以下命令都从 workspace 根目录运行。dry-run 仍需从环境变量或私有配置文件读取 `SMTP_USERNAME`、`SMTP_PASSWORD` 和收件人，但不会连接 SMTP。所有产物都写入 `.tmp/send-qq-email/`。
+
+先查看帮助，不读取配置也不发送邮件：
+
+```powershell
+python skills/send-qq-email/scripts/send_qq_email.py --help
+```
+
 dry-run 测试邮件：
 
 ```powershell
-python scripts/send_qq_email.py `
+python skills/send-qq-email/scripts/send_qq_email.py `
   --test `
   --dry-run `
   --output-dir .tmp/send-qq-email/test
 ```
 
-发送自定义正文：
+dry-run 自定义正文：
 
 ```powershell
-python scripts/send_qq_email.py `
+python skills/send-qq-email/scripts/send_qq_email.py `
   --subject "Daily report" `
-  --text-file report.txt `
+  --text "This is a dry-run daily report." `
   --to receiver@example.com `
+  --dry-run `
   --output-dir .tmp/send-qq-email/daily-report
 ```
 
 使用私有配置文件：
 
 ```powershell
-python scripts/send_qq_email.py `
+python skills/send-qq-email/scripts/send_qq_email.py `
   --config "$env:USERPROFILE\.send-qq-email\email.yaml" `
   --test `
   --dry-run `
@@ -60,8 +69,33 @@ python scripts/send_qq_email.py `
 
 ## 依赖检查
 
+从 workspace 根目录检查 SMTP 配置：
+
 ```powershell
-python verify_dependencies.py
+python skills/send-qq-email/verify_dependencies.py
 ```
 
-该检查只执行 dry-run smoke test，不会真实发送邮件。
+需要时可显式增加网络连通性检查：
+
+```powershell
+python skills/send-qq-email/verify_dependencies.py --check-network
+```
+
+默认检查只读取外部 SMTP 配置，确认 `SMTP_USERNAME`、`SMTP_PASSWORD` 和 `SMTP_TO` 是否存在；`--check-network` 还会尝试连接配置的 SMTP 主机和端口。该入口不会编译发送脚本、不会生成邮件，也不会执行 dry-run smoke test。
+
+## 输入与输出
+
+| 项目 | 说明 |
+| --- | --- |
+| 输入 | 发送模式、收件人、主题、文本或 HTML 正文、可选附件，以及仓库外的 SMTP 配置。 |
+| 输出 | `.tmp/send-qq-email/<task>/message.eml` 和 `.tmp/send-qq-email/<task>/result.json`。 |
+| 临时目录 | workspace 根目录下的 `.tmp/send-qq-email/`；不要把凭据或邮件临时产物写入 skill 子仓。 |
+
+## 完成标准
+
+- `--help` 能正常显示命令参数，或 dry-run 返回 `status: dry_run`。
+- `.eml` 与 `result.json` 写入指定的 `.tmp/send-qq-email/<task>/`。
+- 主 Agent 汇报模式、收件人、结果状态和产物路径，但不显示 SMTP 授权码。
+- 若为真实发送，发送意图和收件人已经明确；若信息不明确，已经由用户人工确认。
+
+本 skill 默认不需要子 Agent 或 checker；普通调用无需为此额外授权。
