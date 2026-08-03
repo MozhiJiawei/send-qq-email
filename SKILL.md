@@ -82,12 +82,3 @@ py scripts/send_qq_email.py --config "$env:USERPROFILE\.send-qq-email\email.yaml
 - Returns exit code `0` for `sent` or `dry_run`, `2` for configuration errors, and `3` for SMTP send failures.
 - Supports simple YAML or JSON private config files with a top-level `smtp` object.
 
-## Validation
-
-Run the dependency and smoke checks from the skill root:
-
-```powershell
-py verify_dependencies.py
-```
-
-This compiles the sender script and performs a dry-run smoke test. It never sends a real email.
