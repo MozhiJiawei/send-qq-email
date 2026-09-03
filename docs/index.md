@@ -12,7 +12,7 @@
 | 配置层 | SMTP 配置来自显式 `--config`、`SEND_QQ_EMAIL_CONFIG`、默认私有配置文件或环境变量。授权码只从仓库外读取。 |
 | 执行层 | `scripts/send_qq_email.py` 负责校验发送参数、构造 MIME 邮件、写入快照，并按参数执行 dry-run 或连接 SMTP；它不负责决定是否应当真实发送。 |
 | 依赖检查 | `verify_dependencies.py` 只检查 SMTP 用户名、授权码和默认收件人是否已配置；仅在显式传入 `--check-network` 时额外检查 SMTP 地址的 TCP 连通性。它不编译脚本，也不执行 dry-run smoke test。 |
-| 交付层 | `.tmp/send-qq-email/<task>/message.eml` 保存邮件快照，`result.json` 保存结构化结果。 |
+| 交付层 | `.tmp/runs/<run-id>/send-qq-email/<task>/message.eml` 保存邮件快照，`result.json` 保存结构化结果。 |
 
 主要输入是发送模式、收件人、主题、文本或 HTML 正文、可选附件与私有 SMTP 配置；主要输出是 `.eml` 快照和结果 JSON。脚本不会代替用户完成 QQ 登录、安全验证或授权码生成，也不应把凭据写进交付物。
 
@@ -73,14 +73,14 @@
 - 配置检查、预览和验证默认使用 dry-run。
 - 真实发送前，如果收件人或意图不明确，Agent 应先确认。
 - 脚本可以写 `.eml` 和 `result.json`，但不记录 SMTP 密码或授权码。
-- 输出目录在主工作区中应放到 `.tmp/send-qq-email/` 下。
+- 输出目录在主工作区中应放到 `.tmp/runs/<run-id>/send-qq-email/` 下。
 
 ## 输出契约
 
 脚本会在输出目录写入：
 
 ```text
-.tmp/send-qq-email/<task>/
+.tmp/runs/<run-id>/send-qq-email/<task>/
 |-- message.eml
 `-- result.json
 ```

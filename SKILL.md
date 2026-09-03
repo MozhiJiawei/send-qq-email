@@ -52,13 +52,13 @@ SMTP_TO=receiver@example.com
 Dry-run a test message and write artifacts only:
 
 ```powershell
-py scripts/send_qq_email.py --test --dry-run --output-dir artifacts/email/send-qq-email-latest
+py scripts/send_qq_email.py --test --dry-run --output-dir .tmp/runs/<run-id>/send-qq-email
 ```
 
 Send a test message using configured SMTP credentials:
 
 ```powershell
-py scripts/send_qq_email.py --test --output-dir artifacts/email/send-qq-email-latest
+py scripts/send_qq_email.py --test --output-dir .tmp/runs/<run-id>/send-qq-email
 ```
 
 Send custom content:

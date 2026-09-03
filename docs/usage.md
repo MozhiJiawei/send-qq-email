@@ -4,7 +4,7 @@
 
 ## 典型 Prompt
 
-- `请用 QQ 邮箱 SMTP dry-run 一封测试邮件，并把 .eml 快照写到 .tmp/send-qq-email/。`
+- `请用 QQ 邮箱 SMTP dry-run 一封测试邮件，并把 .eml 快照写到 .tmp/runs/<run-id>/send-qq-email/。`
 - `请检查我的 QQ 邮箱 SMTP 环境变量是否齐全，不要真实发送邮件。`
 - `请把这段日报内容通过 QQ 邮箱发给我指定的收件人；发送前先确认收件人。`
 
@@ -29,7 +29,7 @@
 
 ## 脚本入口
 
-以下命令都从 workspace 根目录运行。dry-run 仍需从环境变量或私有配置文件读取 `SMTP_USERNAME`、`SMTP_PASSWORD` 和收件人，但不会连接 SMTP。所有产物都写入 `.tmp/send-qq-email/`。
+以下命令都从 workspace 根目录运行。dry-run 仍需从环境变量或私有配置文件读取 `SMTP_USERNAME`、`SMTP_PASSWORD` 和收件人，但不会连接 SMTP。所有产物都写入 `.tmp/runs/<run-id>/send-qq-email/`。
 
 先查看帮助，不读取配置也不发送邮件：
 
@@ -43,7 +43,7 @@ dry-run 测试邮件：
 python skills/send-qq-email/scripts/send_qq_email.py `
   --test `
   --dry-run `
-  --output-dir .tmp/send-qq-email/test
+  --output-dir .tmp/runs/<run-id>/send-qq-email/test
 ```
 
 dry-run 自定义正文：
@@ -54,7 +54,7 @@ python skills/send-qq-email/scripts/send_qq_email.py `
   --text "This is a dry-run daily report." `
   --to receiver@example.com `
   --dry-run `
-  --output-dir .tmp/send-qq-email/daily-report
+  --output-dir .tmp/runs/<run-id>/send-qq-email/daily-report
 ```
 
 使用私有配置文件：
@@ -64,7 +64,7 @@ python skills/send-qq-email/scripts/send_qq_email.py `
   --config "$env:USERPROFILE\.send-qq-email\email.yaml" `
   --test `
   --dry-run `
-  --output-dir .tmp/send-qq-email/config-check
+  --output-dir .tmp/runs/<run-id>/send-qq-email/config-check
 ```
 
 ## 依赖检查
@@ -88,13 +88,13 @@ python skills/send-qq-email/verify_dependencies.py --check-network
 | 项目 | 说明 |
 | --- | --- |
 | 输入 | 发送模式、收件人、主题、文本或 HTML 正文、可选附件，以及仓库外的 SMTP 配置。 |
-| 输出 | `.tmp/send-qq-email/<task>/message.eml` 和 `.tmp/send-qq-email/<task>/result.json`。 |
-| 临时目录 | workspace 根目录下的 `.tmp/send-qq-email/`；不要把凭据或邮件临时产物写入 skill 子仓。 |
+| 输出 | `.tmp/runs/<run-id>/send-qq-email/<task>/message.eml` 和 `.tmp/runs/<run-id>/send-qq-email/<task>/result.json`。 |
+| 临时目录 | workspace 根目录下的 `.tmp/runs/<run-id>/send-qq-email/`；不要把凭据或邮件临时产物写入 skill 子仓。 |
 
 ## 完成标准
 
 - `--help` 能正常显示命令参数，或 dry-run 返回 `status: dry_run`。
-- `.eml` 与 `result.json` 写入指定的 `.tmp/send-qq-email/<task>/`。
+- `.eml` 与 `result.json` 写入指定的 `.tmp/runs/<run-id>/send-qq-email/<task>/`。
 - 主 Agent 汇报模式、收件人、结果状态和产物路径，但不显示 SMTP 授权码。
 - 若为真实发送，发送意图和收件人已经明确；若信息不明确，已经由用户人工确认。
 

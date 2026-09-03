@@ -103,7 +103,11 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--attach", action="append", default=[], help="Path to a file attachment. Can be used more than once.")
     parser.add_argument("--test", action="store_true", help="Use a built-in SMTP test message.")
     parser.add_argument("--dry-run", action="store_true", help="Build artifacts without connecting to SMTP.")
-    parser.add_argument("--output-dir", default="artifacts/email/send-qq-email-latest")
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        help="Task-owned output directory, normally .tmp/runs/<run-id>/send-qq-email.",
+    )
     parser.add_argument("--eml-output", help="Explicit .eml output path.")
     parser.add_argument("--result-output", help="Explicit result JSON output path.")
     return parser.parse_args(argv)
